@@ -1,0 +1,122 @@
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+const builtin = @import("builtin");
+const os = @import("os.zig");
+const types = @import("types.zig");
+const Self = @This();
+
+const major: u16 = switch (builtin.os.tag) {
+    .dragonfly => 145,
+    .netbsd => 34,
+    .openbsd => if (builtin.cpu.arch == .x86) 88 else 87,
+    .linux => 226,
+    else => |t| @compileError("DRM major is not supported on " ++ @tagName(t)),
+};
+
+pub const Type = enum(u8) {
+    primary = 0,
+    control = 1,
+    render = 2,
+
+    pub fn getMinorBase(self: Type) ?u8 {
+        return switch (self) {
+            .primary => 0,
+            .render => 128,
+            else => null,
+        };
+    }
+
+    pub fn getDeviceName(self: Type) ?[]const u8 {
+        return switch (self) {
+            .primary => os.primaryDeviceName,
+            .control => os.controlDeviceName,
+            .render => os.renderDeviceName,
+        };
+    }
+};
+
+pub const Kind = enum {
+    busid,
+    name,
+};
+
+pub const Iterator = struct {
+    allocator: Allocator,
+    type: Type,
+    index: u6 = 0,
+
+    pub fn init(alloc: Allocator, t: Type) Iterator {
+        return .{ .allocator = alloc, .type = t };
+    }
+
+    pub fn next(self: *Iterator) ?Self {
+        if (self.index == 64) return null;
+
+        const base = self.type.getMinorBase() orelse return null;
+        const minor = base + self.index;
+
+        const node = openMinor(self.allocator, minor, self.type) catch null;
+        self.index += 1;
+        return node;
+    }
+};
+
+allocator: Allocator,
+fd: std.os.fd_t,
+
+pub fn open(alloc: Allocator, name: ?[]const u8, busid: ?[]const u8) !Self {
+    return openWithType(alloc, name, busid, .primary);
+}
+
+pub fn openWithType(alloc: Allocator, name: ?[]const u8, busid: ?[]const u8, t: Type) !Self {
+    if (busid) |b| {
+        if (openBy(alloc, b, .busid, t) catch null) |r| return r;
+    }
+
+    if (name) |n| return try openBy(alloc, n, .name, t);
+    return error.InvalidParams;
+}
+
+pub fn openMinor(alloc: Allocator, minor: u8, t: Type) !Self {
+    const devName = t.getDeviceName() orelse return error.InvalidType;
+
+    var buff = [_]u8{0} ** std.os.PATH_MAX;
+    _ = try std.fmt.bufPrint(&buff, "/dev/dri/{s}{}", .{ devName, minor });
+
+    var end: usize = 0;
+    while (buff[end] != 0) : (end += 1) {}
+
+    return .{
+        .allocator = alloc,
+        .fd = (try std.fs.openFileAbsolute(buff[0..end], .{
+            .mode = .read_write,
+        })).handle,
+    };
+}
+
+pub fn openBy(alloc: Allocator, kindValue: []const u8, kind: Kind, t: Type) !Self {
+    var iter = Iterator.init(alloc, t);
+
+    while (iter.next()) |node| {
+        errdefer node.deinit();
+
+        if (kind == .name) {
+            const version = try node.getVersion();
+            defer version.deinit(alloc);
+
+            if (std.mem.eql(u8, version.name[0..version.nameLen], kindValue)) return node;
+        }
+    }
+
+    return error.NamedNotFound;
+}
+
+pub fn deinit(self: *const Self) void {
+    std.os.close(self.fd);
+}
+
+pub fn getVersion(self: *const Self) !types.Version {
+    var version: types.Version = .{};
+    try version.getAllocated(self.fd, self.allocator);
+    return version;
+}
