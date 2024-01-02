@@ -100,11 +100,36 @@ pub fn openBy(alloc: Allocator, kindValue: []const u8, kind: Kind, t: Type) !Sel
     while (iter.next()) |node| {
         errdefer node.deinit();
 
-        if (kind == .name) {
-            const version = try node.getVersion();
-            defer version.deinit(alloc);
+        switch (kind) {
+            .name => {
+                const version = try node.getVersion();
+                defer version.deinit(alloc);
 
-            if (std.mem.eql(u8, version.name[0..version.nameLen], kindValue)) return node;
+                if (std.mem.eql(u8, version.name[0..version.nameLen], kindValue)) return node;
+            },
+            .busid => {
+                var version = types.SetVersion{
+                    .diMajor = 1,
+                    .diMinor = 4,
+                    .ddMajor = -1,
+                    .ddMinor = -1,
+                };
+
+                version.set(node.fd) catch {
+                    version = .{
+                        .diMajor = 1,
+                        .diMinor = 1,
+                        .ddMajor = -1,
+                        .ddMinor = -1,
+                    };
+                    try version.set(node.fd);
+                };
+
+                const busId = try node.getBusId();
+                defer alloc.free(busId);
+
+                if (std.mem.eql(u8, busId, kindValue)) return node;
+            },
         }
     }
 
@@ -119,4 +144,10 @@ pub fn getVersion(self: *const Self) !types.Version {
     var version: types.Version = .{};
     try version.getAllocated(self.fd, self.allocator);
     return version;
+}
+
+pub fn getBusId(self: *const Self) ![]const u8 {
+    var unique: types.Unique = .{};
+    try unique.getAllocated(self.fd, self.allocator);
+    return unique.value[0..unique.len];
 }

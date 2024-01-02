@@ -12,6 +12,9 @@ pub fn main() !void {
         const version = try node.getVersion();
         defer version.deinit(alloc);
 
+        const busId = try node.getBusId();
+        defer alloc.free(busId);
+
         std.debug.print("{} {}\n", .{ node, version });
     }
 }
