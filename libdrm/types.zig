@@ -65,7 +65,7 @@ pub const ModeInfo = extern struct {
     }
 };
 
-pub const GetConnector = extern struct {
+pub const ModeGetConnector = extern struct {
     encoderIdPtr: u64 = 0,
     modesPtr: u64 = 0,
     propsPtr: u64 = 0,
@@ -83,9 +83,9 @@ pub const GetConnector = extern struct {
     subpixel: u32 = 0,
     pad: u32 = 0,
 
-    pub const req = os.IOCTL.IOWR(0xA7, GetConnector);
+    pub const req = os.IOCTL.IOWR(0xA7, ModeGetConnector);
 
-    pub fn get(self: *GetConnector, fd: std.os.fd_t) !void {
+    pub fn get(self: *ModeGetConnector, fd: std.os.fd_t) !void {
         return switch (std.os.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
@@ -98,7 +98,7 @@ pub const GetConnector = extern struct {
         };
     }
 
-    pub fn getAllocated(self: *GetConnector, fd: std.os.fd_t, alloc: Allocator) !void {
+    pub fn getAllocated(self: *ModeGetConnector, fd: std.os.fd_t, alloc: Allocator) !void {
         try self.get(fd);
 
         errdefer self.deinit(alloc);
@@ -113,17 +113,17 @@ pub const GetConnector = extern struct {
         try self.get(fd);
     }
 
-    pub fn deinit(self: *const GetConnector, alloc: Allocator) void {
+    pub fn deinit(self: *const ModeGetConnector, alloc: Allocator) void {
         if (self.props()) |v| alloc.free(v);
         if (self.propValues()) |v| alloc.free(v);
         if (self.modes()) |v| alloc.free(v);
         if (self.encoderIds()) |v| alloc.free(v);
     }
 
-    pub fn format(self: *const GetConnector, comptime _: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
+    pub fn format(self: *const ModeGetConnector, comptime _: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
         _ = options;
 
-        try writer.writeAll(@typeName(GetConnector));
+        try writer.writeAll(@typeName(ModeGetConnector));
         try writer.print("{{ .encoderId = {}, .connectorId = {}, .connectorType = {}, .connectorTypeId = {}, .connection = {}, .mmWidth = {}, .mmHeight = {}, .subpixel = {}", .{
             self.encoderId,
             self.connectorId,
@@ -143,24 +143,24 @@ pub const GetConnector = extern struct {
         try writer.writeAll(" }");
     }
 
-    fn fieldPointer(self: *const GetConnector, comptime field: std.meta.FieldEnum(GetConnector), comptime T: type, count: u32) ?[]const T {
+    fn fieldPointer(self: *const ModeGetConnector, comptime field: std.meta.FieldEnum(ModeGetConnector), comptime T: type, count: u32) ?[]const T {
         if (@field(self, @tagName(field)) == 0) return null;
         return @as([*]T, @ptrFromInt(@field(self, @tagName(field))))[0..count];
     }
 
-    pub inline fn props(self: *const GetConnector) ?[]const u32 {
+    pub inline fn props(self: *const ModeGetConnector) ?[]const u32 {
         return self.fieldPointer(.propsPtr, u32, self.countProps);
     }
 
-    pub inline fn propValues(self: *const GetConnector) ?[]const u64 {
+    pub inline fn propValues(self: *const ModeGetConnector) ?[]const u64 {
         return self.fieldPointer(.propsValuesPtr, u64, self.countProps);
     }
 
-    pub inline fn modes(self: *const GetConnector) ?[]const ModeInfo {
+    pub inline fn modes(self: *const ModeGetConnector) ?[]const ModeInfo {
         return self.fieldPointer(.modesPtr, ModeInfo, self.countModes);
     }
 
-    pub inline fn encoderIds(self: *const GetConnector) ?[]const u32 {
+    pub inline fn encoderIds(self: *const ModeGetConnector) ?[]const u32 {
         return self.fieldPointer(.encoderIdPtr, u32, self.countEncoders);
     }
 };

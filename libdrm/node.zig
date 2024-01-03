@@ -158,8 +158,8 @@ pub fn getModeCardRes(self: *const Self) !types.ModeCardRes {
     return modeCardRes;
 }
 
-pub fn getConnector(self: *const Self, id: u32) !types.GetConnector {
-    var connector: types.GetConnector = .{
+pub fn getConnector(self: *const Self, id: u32) !types.ModeGetConnector {
+    var connector: types.ModeGetConnector = .{
         .connectorId = id,
     };
     try connector.getAllocated(self.fd, self.allocator);
