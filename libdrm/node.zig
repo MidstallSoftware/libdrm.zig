@@ -181,3 +181,17 @@ pub fn getCrtc(self: *const Self, id: u32) !types.ModeGetCrtc {
     try crtc.get(self.fd);
     return crtc;
 }
+
+pub fn getFb(self: *const Self, id: u32) !types.ModeFbCmd {
+    var fb: types.ModeFbCmd = .{
+        .fbId = id,
+    };
+    try fb.get(self.fd);
+    return fb;
+}
+
+pub fn getEvent(self: *const Self) !types.Event {
+    var ev: types.Event = undefined;
+    try ev.read(self.fd);
+    return ev;
+}

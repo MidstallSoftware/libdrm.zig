@@ -29,7 +29,9 @@ pub fn main() !void {
         if (modeCardRes.crtcIds()) |crtcIds| {
             for (crtcIds) |crtcId| {
                 const crtc = try node.getCrtc(crtcId);
-                std.debug.print("{}\n", .{crtc});
+
+                const fb = node.getFb(crtc.fbId) catch null;
+                std.debug.print("{} {?}\n", .{ crtc, fb });
             }
         }
 
