@@ -3,6 +3,7 @@ const Allocator = std.mem.Allocator;
 const os = @import("os.zig");
 
 pub usingnamespace @import("types/base.zig");
+pub usingnamespace @import("types/map.zig");
 pub usingnamespace @import("types/mode.zig");
 pub usingnamespace @import("types/mode/crtc.zig");
 pub usingnamespace @import("types/mode/conn.zig");

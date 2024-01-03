@@ -6,10 +6,23 @@ pub const Unique = extern struct {
     len: usize = 0,
     value: [*]u8 = undefined,
 
-    pub const req = os.IOCTL.IOWR(0x1, Unique);
+    pub const reqGet = os.IOCTL.IOWR(0x1, Unique);
+    pub const reqSet = os.IOCTL.IOWR(0x10, Unique);
 
     pub fn get(self: *Unique, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
+        return switch (std.os.errno(os.ioctl(fd, reqGet, @intFromPtr(self)))) {
+            .SUCCESS => {},
+            .BADF => error.NotOpenForWriting,
+            .NOENT => error.NotFound,
+            .FAULT => unreachable,
+            .INVAL => unreachable,
+            .NOTTY => error.NotATerminal,
+            else => |e| std.os.unexpectedErrno(e),
+        };
+    }
+
+    pub fn set(self: *Unique, fd: std.os.fd_t) !void {
+        return switch (std.os.errno(os.ioctl(fd, reqSet, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
