@@ -12,9 +12,20 @@ pub fn main() !void {
         const version = try node.getVersion();
         defer version.deinit(alloc);
 
-        const busId = try node.getBusId();
-        defer alloc.free(busId);
+        const modeCardRes = node.getModeCardRes() catch continue;
+        defer modeCardRes.deinit(alloc);
 
-        std.debug.print("{} {}\n", .{ node, version });
+        if (modeCardRes.connectorIds()) |connectorIds| {
+            for (connectorIds) |connectorId| {
+                const connector = try node.getConnector(connectorId);
+                defer connector.deinit(alloc);
+
+                const encoder = node.getEncoder(connector.encoderId) catch null;
+
+                std.debug.print("{} {?}\n", .{ connector, encoder });
+            }
+        }
+
+        std.debug.print("{} {} {}\n", .{ node, version, modeCardRes });
     }
 }

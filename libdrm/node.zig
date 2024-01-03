@@ -151,3 +151,25 @@ pub fn getBusId(self: *const Self) ![]const u8 {
     try unique.getAllocated(self.fd, self.allocator);
     return unique.value[0..unique.len];
 }
+
+pub fn getModeCardRes(self: *const Self) !types.ModeCardRes {
+    var modeCardRes: types.ModeCardRes = .{};
+    try modeCardRes.getAllocated(self.fd, self.allocator);
+    return modeCardRes;
+}
+
+pub fn getConnector(self: *const Self, id: u32) !types.GetConnector {
+    var connector: types.GetConnector = .{
+        .connectorId = id,
+    };
+    try connector.getAllocated(self.fd, self.allocator);
+    return connector;
+}
+
+pub fn getEncoder(self: *const Self, id: u32) !types.ModeGetEncoder {
+    var encoder: types.ModeGetEncoder = .{
+        .encoderId = id,
+    };
+    try encoder.get(self.fd);
+    return encoder;
+}
