@@ -2,6 +2,135 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const os = @import("os.zig");
 
+pub const Event = union(Type) {
+    vblank: VBlank,
+    flipComplete: VBlank,
+    crtcSeq: CrtcSeq,
+
+    pub const Base = extern struct {
+        type: Type = undefined,
+        length: u32 = 0,
+    };
+
+    pub const VBlank = extern struct {
+        userData: u64 = 0,
+        tvSec: u32 = 0,
+        tvUsec: u32 = 0,
+        seq: u64 = 0,
+        crtcId: u32 = 0,
+    };
+
+    pub const CrtcSeq = extern struct {
+        userData: u64 = 0,
+        timeNs: i64 = 0,
+        seq: u64 = 0,
+    };
+
+    pub const Type = enum(u32) {
+        vblank = 0x1,
+        flipComplete = 0x2,
+        crtcSeq = 0x3,
+    };
+
+    pub fn read(self: *Event, fd: std.os.fd_t) !void {
+        var base: Base = undefined;
+        _ = try std.os.read(fd, std.mem.asBytes(&base));
+
+        self.* = switch (base.type) {
+            .vblank => blk: {
+                var vblank: VBlank = undefined;
+                _ = try std.os.read(fd, std.mem.asBytes(&vblank));
+                break :blk .{ .vblank = vblank };
+            },
+            .flipComplete => blk: {
+                var vblank: VBlank = undefined;
+                _ = try std.os.read(fd, std.mem.asBytes(&vblank));
+                break :blk .{ .flipComplete = vblank };
+            },
+            .crtcSeq => blk: {
+                var crtcSeq: CrtcSeq = undefined;
+                _ = try std.os.read(fd, std.mem.asBytes(&crtcSeq));
+                break :blk .{ .crtcSeq = crtcSeq };
+            },
+        };
+    }
+};
+
+pub const ModeCrtcPageFlip = extern struct {
+    crtcId: u32 = 0,
+    fbId: u32 = 0,
+    flags: u32 = 0,
+    reserved: u32 = 0,
+    userData: u64 = 0,
+
+    pub const req = os.IOCTL.IOWR(0xB0, ModeCrtcPageFlip);
+
+    pub fn exec(self: *ModeCrtcPageFlip, fd: std.os.fd_t) !void {
+        return switch (std.os.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
+            .SUCCESS => {},
+            .BADF => error.NotOpenForWriting,
+            .NOENT => error.NotFound,
+            .FAULT => unreachable,
+            .INVAL => unreachable,
+            .NOTTY => error.NotATerminal,
+            .OPNOTSUPP => error.NotSupported,
+            else => |e| std.os.unexpectedErrno(e),
+        };
+    }
+};
+
+pub const ModeFbCmd = extern struct {
+    fbId: u32 = 0,
+    width: u32 = 0,
+    height: u32 = 0,
+    pitch: u32 = 0,
+    bpp: u32 = 0,
+    handle: u32 = 0,
+
+    pub const reqGet = os.IOCTL.IOWR(0xAD, ModeFbCmd);
+    pub const reqAdd = os.IOCTL.IOWR(0xAE, ModeFbCmd);
+    pub const reqRemove = os.IOCTL.IOWR(0xAF, u32);
+
+    pub fn get(self: *ModeFbCmd, fd: std.os.fd_t) !void {
+        return switch (std.os.errno(os.ioctl(fd, reqGet, @intFromPtr(self)))) {
+            .SUCCESS => {},
+            .BADF => error.NotOpenForWriting,
+            .NOENT => error.NotFound,
+            .FAULT => unreachable,
+            .INVAL => unreachable,
+            .NOTTY => error.NotATerminal,
+            .OPNOTSUPP => error.NotSupported,
+            else => |e| std.os.unexpectedErrno(e),
+        };
+    }
+
+    pub fn add(self: *ModeFbCmd, fd: std.os.fd_t) !void {
+        return switch (std.os.errno(os.ioctl(fd, reqAdd, @intFromPtr(self)))) {
+            .SUCCESS => {},
+            .BADF => error.NotOpenForWriting,
+            .NOENT => error.NotFound,
+            .FAULT => unreachable,
+            .INVAL => unreachable,
+            .NOTTY => error.NotATerminal,
+            .OPNOTSUPP => error.NotSupported,
+            else => |e| std.os.unexpectedErrno(e),
+        };
+    }
+
+    pub fn remove(fd: std.os.fd_t, id: u32) !void {
+        return switch (std.os.errno(os.ioctl(fd, reqGet, @intFromPtr(&id)))) {
+            .SUCCESS => {},
+            .BADF => error.NotOpenForWriting,
+            .NOENT => error.NotFound,
+            .FAULT => unreachable,
+            .INVAL => unreachable,
+            .NOTTY => error.NotATerminal,
+            .OPNOTSUPP => error.NotSupported,
+            else => |e| std.os.unexpectedErrno(e),
+        };
+    }
+};
+
 pub const ModeGetCrtc = extern struct {
     setConnectorsPtr: u64 = 0,
     countConnectors: u32 = 0,
