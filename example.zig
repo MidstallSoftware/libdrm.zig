@@ -23,22 +23,27 @@ pub fn main() !void {
                 const encoder = node.getEncoder(connector.encoderId) catch null;
 
                 if (connector.props()) |props| {
-                    for (props) |propId| {
+                    const propValues = connector.propValues().?;
+
+                    for (props, 0..) |propId, i| {
+                        const propValueId = propValues[i];
+
                         var prop: libdrm.types.ModeGetProperty = .{
                             .propId = propId,
                         };
                         try prop.getAllocated(node.fd, alloc);
                         defer prop.deinit(alloc);
 
-                        if (prop.blobs()) |blobs| {
-                            for (blobs) |blobId| {
-                                var blob: libdrm.types.ModeGetBlob = .{
-                                    .blobId = blobId,
-                                };
-                                try blob.getAllocated(node.fd, alloc);
+                        if (prop.flags.blob == 1) {
+                            var blob: libdrm.types.ModeGetBlob = .{
+                                .blobId = @intCast(propValueId),
+                            };
+                            if (blob.getAllocated(node.fd, alloc)) {
                                 defer blob.deinit(alloc);
 
                                 std.debug.print("{}\n", .{blob});
+                            } else |err| {
+                                std.debug.print("{s}\n", .{@errorName(err)});
                             }
                         }
 
