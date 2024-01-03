@@ -2,6 +2,56 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const os = @import("os.zig");
 
+pub const ModeGetCrtc = extern struct {
+    setConnectorsPtr: u64 = 0,
+    countConnectors: u32 = 0,
+    crtcId: u32 = 0,
+    fbId: u32 = 0,
+    x: u32 = 0,
+    y: u32 = 0,
+    gammaSize: u32 = 0,
+    modeValid: u32 = 0,
+    mode: ModeInfo = .{},
+
+    pub const reqGet = os.IOCTL.IOWR(0xA1, ModeGetCrtc);
+    pub const reqSet = os.IOCTL.IOWR(0xA2, ModeGetCrtc);
+
+    pub fn get(self: *ModeGetCrtc, fd: std.os.fd_t) !void {
+        return switch (std.os.errno(os.ioctl(fd, reqGet, @intFromPtr(self)))) {
+            .SUCCESS => {},
+            .BADF => error.NotOpenForWriting,
+            .NOENT => error.NotFound,
+            .FAULT => unreachable,
+            .INVAL => unreachable,
+            .NOTTY => error.NotATerminal,
+            .OPNOTSUPP => error.NotSupported,
+            else => |e| std.os.unexpectedErrno(e),
+        };
+    }
+
+    pub fn set(self: *const ModeGetCrtc, fd: std.os.fd_t) !void {
+        return switch (std.os.errno(os.ioctl(fd, reqSet, @intFromPtr(self)))) {
+            .SUCCESS => {},
+            .BADF => error.NotOpenForWriting,
+            .NOENT => error.NotFound,
+            .FAULT => unreachable,
+            .INVAL => unreachable,
+            .NOTTY => error.NotATerminal,
+            .OPNOTSUPP => error.NotSupported,
+            else => |e| std.os.unexpectedErrno(e),
+        };
+    }
+
+    fn fieldPointer(self: *const ModeGetCrtc, comptime field: std.meta.FieldEnum(ModeGetCrtc), comptime T: type, count: u32) ?[]const T {
+        if (@field(self, @tagName(field)) == 0) return null;
+        return @as([*]T, @ptrFromInt(@field(self, @tagName(field))))[0..count];
+    }
+
+    pub inline fn setConnectors(self: *const ModeGetCrtc) ?[]const u32 {
+        return self.fieldPointer(.setConnectorsPtr, u32, self.countConnectors);
+    }
+};
+
 pub const ModeGetEncoder = extern struct {
     encoderId: u32 = 0,
     encoderType: u32 = 0,
@@ -26,21 +76,21 @@ pub const ModeGetEncoder = extern struct {
 };
 
 pub const ModeInfo = extern struct {
-    clock: u32,
-    hdisplay: u16,
-    hsyncStart: u16,
-    hsyncEnd: u16,
-    htotal: u16,
-    hskew: u16,
-    vdisplay: u16,
-    vsyncStart: u16,
-    vsyncEnd: u16,
-    vtotal: u16,
-    vscan: u16,
-    vrefresh: u32,
-    flags: u32,
-    type: u32,
-    name: [32]u8,
+    clock: u32 = 0,
+    hdisplay: u16 = 0,
+    hsyncStart: u16 = 0,
+    hsyncEnd: u16 = 0,
+    htotal: u16 = 0,
+    hskew: u16 = 0,
+    vdisplay: u16 = 0,
+    vsyncStart: u16 = 0,
+    vsyncEnd: u16 = 0,
+    vtotal: u16 = 0,
+    vscan: u16 = 0,
+    vrefresh: u32 = 0,
+    flags: u32 = 0,
+    type: u32 = 0,
+    name: [32]u8 = undefined,
 
     pub fn format(self: *const ModeInfo, comptime _: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
         _ = options;

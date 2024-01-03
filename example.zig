@@ -26,6 +26,13 @@ pub fn main() !void {
             }
         }
 
+        if (modeCardRes.crtcIds()) |crtcIds| {
+            for (crtcIds) |crtcId| {
+                const crtc = try node.getCrtc(crtcId);
+                std.debug.print("{}\n", .{crtc});
+            }
+        }
+
         std.debug.print("{} {} {}\n", .{ node, version, modeCardRes });
     }
 }

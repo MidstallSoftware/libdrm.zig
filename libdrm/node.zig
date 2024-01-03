@@ -173,3 +173,11 @@ pub fn getEncoder(self: *const Self, id: u32) !types.ModeGetEncoder {
     try encoder.get(self.fd);
     return encoder;
 }
+
+pub fn getCrtc(self: *const Self, id: u32) !types.ModeGetCrtc {
+    var crtc: types.ModeGetCrtc = .{
+        .crtcId = id,
+    };
+    try crtc.get(self.fd);
+    return crtc;
+}
