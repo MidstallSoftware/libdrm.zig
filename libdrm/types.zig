@@ -9,6 +9,7 @@ pub usingnamespace @import("types/mode/crtc.zig");
 pub usingnamespace @import("types/mode/conn.zig");
 pub usingnamespace @import("types/mode/fb.zig");
 pub usingnamespace @import("types/mode/plane.zig");
+pub usingnamespace @import("types/mode/props.zig");
 
 pub const Event = union(Type) {
     vblank: VBlank,
