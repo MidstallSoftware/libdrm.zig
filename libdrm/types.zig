@@ -254,7 +254,7 @@ pub const ModeGetConnector = extern struct {
     countEncoders: u32 = 0,
     encoderId: u32 = 0,
     connectorId: u32 = 0,
-    connectorType: u32 = 0,
+    connectorType: Type = undefined,
     connectorTypeId: u32 = 0,
     connection: u32 = 0,
     mmWidth: u32 = 0,
@@ -303,10 +303,10 @@ pub const ModeGetConnector = extern struct {
         _ = options;
 
         try writer.writeAll(@typeName(ModeGetConnector));
-        try writer.print("{{ .encoderId = {}, .connectorId = {}, .connectorType = {}, .connectorTypeId = {}, .connection = {}, .mmWidth = {}, .mmHeight = {}, .subpixel = {}", .{
+        try writer.print("{{ .encoderId = {}, .connectorId = {}, .connectorType = {s}, .connectorTypeId = {}, .connection = {}, .mmWidth = {}, .mmHeight = {}, .subpixel = {}", .{
             self.encoderId,
             self.connectorId,
-            self.connectorType,
+            @tagName(self.connectorType),
             self.connectorTypeId,
             self.connection,
             self.mmWidth,
@@ -342,6 +342,30 @@ pub const ModeGetConnector = extern struct {
     pub inline fn encoderIds(self: *const ModeGetConnector) ?[]const u32 {
         return self.fieldPointer(.encoderIdPtr, u32, self.countEncoders);
     }
+
+    pub const Type = enum(u32) {
+        unknown = 0,
+        vga = 1,
+        dvii = 2,
+        dvid = 3,
+        dvia = 4,
+        composite = 5,
+        svideo = 6,
+        lvds = 7,
+        component = 8,
+        din9Pin = 9,
+        displayPort = 10,
+        hdmiA = 11,
+        hdmiB = 12,
+        tv = 13,
+        eDP = 14,
+        virtual = 15,
+        dsi = 16,
+        dpi = 17,
+        writeback = 18,
+        spi = 19,
+        usb = 20,
+    };
 };
 
 pub const ModeCardRes = extern struct {
