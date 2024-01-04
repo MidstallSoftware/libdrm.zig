@@ -2,7 +2,10 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const os = @import("os.zig");
 
+pub const amdgpu = @import("types/amdgpu.zig");
+
 pub usingnamespace @import("types/base.zig");
+pub usingnamespace @import("types/gem.zig");
 pub usingnamespace @import("types/map.zig");
 pub usingnamespace @import("types/mode.zig");
 pub usingnamespace @import("types/mode/crtc.zig");
