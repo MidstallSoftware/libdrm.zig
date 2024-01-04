@@ -190,6 +190,14 @@ pub fn getFb(self: *const Self, id: u32) !types.ModeFbCmd {
     return fb;
 }
 
+pub fn getFb2(self: *const Self, id: u32) !types.ModeFbCmd2 {
+    var fb: types.ModeFbCmd2 = .{
+        .fbId = id,
+    };
+    try fb.get(self.fd);
+    return fb;
+}
+
 pub fn getEvent(self: *const Self) !types.Event {
     var ev: types.Event = undefined;
     try ev.read(self.fd);

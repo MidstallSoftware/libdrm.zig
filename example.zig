@@ -59,7 +59,7 @@ pub fn main() !void {
             for (crtcIds) |crtcId| {
                 const crtc = try node.getCrtc(crtcId);
 
-                const fb = node.getFb(crtc.fbId) catch null;
+                const fb = node.getFb2(crtc.fbId) catch null;
                 std.debug.print("{} {?}\n", .{ crtc, fb });
             }
         }
