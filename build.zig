@@ -7,7 +7,7 @@ pub fn build(b: *std.Build) void {
     const no_tests = b.option(bool, "no-tests", "skip generating tests") orelse false;
 
     const module = b.addModule("libdrm", .{
-        .source_file = .{ .path = b.pathFromRoot("libdrm.zig") },
+        .root_source_file = .{ .path = b.pathFromRoot("libdrm.zig") },
     });
 
     const exe_example = b.addExecutable(.{
@@ -18,7 +18,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe_example.addModule("libdrm", module);
+    exe_example.root_module.addImport("libdrm", module);
     b.installArtifact(exe_example);
 
     if (!no_tests) {
