@@ -1,5 +1,6 @@
 .{
-  .name = "libdrm.zig",
+  .name = .libdrm,
   .version = "0.1.0",
+  .fingerprint = 0xaa2d215b2d787d89,
   .paths = .{"."},
 }

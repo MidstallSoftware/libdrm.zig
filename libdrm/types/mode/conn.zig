@@ -23,8 +23,8 @@ pub const ModeGetConnector = extern struct {
 
     pub const req = os.IOCTL.IOWR(0xA7, ModeGetConnector);
 
-    pub fn get(self: *ModeGetConnector, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
+    pub fn get(self: *ModeGetConnector, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
@@ -32,11 +32,11 @@ pub const ModeGetConnector = extern struct {
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
             .OPNOTSUPP => error.NotSupported,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 
-    pub fn getAllocated(self: *ModeGetConnector, fd: std.os.fd_t, alloc: Allocator) !void {
+    pub fn getAllocated(self: *ModeGetConnector, fd: std.posix.fd_t, alloc: Allocator) !void {
         try self.get(fd);
 
         errdefer self.deinit(alloc);

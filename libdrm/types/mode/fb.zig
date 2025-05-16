@@ -68,8 +68,8 @@ pub const ModeFbCmd2 = extern struct {
     pub const reqAdd = os.IOCTL.IOWR(0xB8, ModeFbCmd2);
     pub const reqGet = os.IOCTL.IOWR(0xCE, ModeFbCmd2);
 
-    pub fn get(self: *ModeFbCmd2, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, reqGet, @intFromPtr(self)))) {
+    pub fn get(self: *ModeFbCmd2, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, reqGet, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
@@ -77,12 +77,12 @@ pub const ModeFbCmd2 = extern struct {
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
             .OPNOTSUPP => error.NotSupported,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 
-    pub fn add(self: *ModeFbCmd2, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, reqAdd, @intFromPtr(self)))) {
+    pub fn add(self: *ModeFbCmd2, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, reqAdd, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
@@ -90,7 +90,7 @@ pub const ModeFbCmd2 = extern struct {
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
             .OPNOTSUPP => error.NotSupported,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 

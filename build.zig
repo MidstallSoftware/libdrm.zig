@@ -7,14 +7,12 @@ pub fn build(b: *std.Build) void {
     const no_tests = b.option(bool, "no-tests", "skip generating tests") orelse false;
 
     const module = b.addModule("libdrm", .{
-        .root_source_file = .{ .path = b.pathFromRoot("libdrm.zig") },
+        .root_source_file = b.path("libdrm.zig"),
     });
 
     const exe_example = b.addExecutable(.{
         .name = "example",
-        .root_source_file = .{
-            .path = b.pathFromRoot("example.zig"),
-        },
+        .root_source_file = b.path("example.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -25,9 +23,7 @@ pub fn build(b: *std.Build) void {
         const step_test = b.step("test", "Run all unit tests");
 
         const unit_tests = b.addTest(.{
-            .root_source_file = .{
-                .path = b.pathFromRoot("libdrm.zig"),
-            },
+            .root_source_file = b.path("libdrm.zig"),
             .target = target,
             .optimize = optimize,
         });

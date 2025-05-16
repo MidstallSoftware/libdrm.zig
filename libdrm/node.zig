@@ -62,7 +62,7 @@ pub const Iterator = struct {
 };
 
 allocator: Allocator,
-fd: std.os.fd_t,
+fd: std.posix.fd_t,
 
 pub fn open(alloc: Allocator, name: ?[]const u8, busid: ?[]const u8) !Self {
     return openWithType(alloc, name, busid, .primary);
@@ -80,7 +80,7 @@ pub fn openWithType(alloc: Allocator, name: ?[]const u8, busid: ?[]const u8, t: 
 pub fn openMinor(alloc: Allocator, minor: u8, t: Type) !Self {
     const devName = t.getDeviceName() orelse return error.InvalidType;
 
-    var buff = [_]u8{0} ** std.os.PATH_MAX;
+    var buff = [_]u8{0} ** std.posix.PATH_MAX;
     _ = try std.fmt.bufPrint(&buff, "/dev/dri/{s}{}", .{ devName, minor });
 
     var end: usize = 0;
@@ -137,7 +137,7 @@ pub fn openBy(alloc: Allocator, kindValue: []const u8, kind: Kind, t: Type) !Sel
 }
 
 pub fn deinit(self: *const Self) void {
-    std.os.close(self.fd);
+    std.posix.close(self.fd);
 }
 
 pub fn getVersion(self: *const Self) !types.Version {

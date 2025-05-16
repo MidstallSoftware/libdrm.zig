@@ -9,31 +9,31 @@ pub const Unique = extern struct {
     pub const reqGet = os.IOCTL.IOWR(0x1, Unique);
     pub const reqSet = os.IOCTL.IOWR(0x10, Unique);
 
-    pub fn get(self: *Unique, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, reqGet, @intFromPtr(self)))) {
+    pub fn get(self: *Unique, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, reqGet, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
             .FAULT => unreachable,
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 
-    pub fn set(self: *Unique, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, reqSet, @intFromPtr(self)))) {
+    pub fn set(self: *Unique, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, reqSet, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
             .FAULT => unreachable,
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 
-    pub fn getAllocated(self: *Unique, fd: std.os.fd_t, alloc: Allocator) !void {
+    pub fn getAllocated(self: *Unique, fd: std.posix.fd_t, alloc: Allocator) !void {
         try self.get(fd);
 
         errdefer self.deinit(alloc);
@@ -63,15 +63,15 @@ pub const SetVersion = extern struct {
 
     pub const req = os.IOCTL.IOWR(0x7, SetVersion);
 
-    pub fn set(self: *Version, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
+    pub fn set(self: *Version, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
             .FAULT => unreachable,
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 };
@@ -89,19 +89,19 @@ pub const Version = extern struct {
 
     pub const req = os.IOCTL.IOWR(0, Version);
 
-    pub fn get(self: *Version, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
+    pub fn get(self: *Version, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
             .FAULT => unreachable,
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 
-    pub fn getAllocated(self: *Version, fd: std.os.fd_t, alloc: Allocator) !void {
+    pub fn getAllocated(self: *Version, fd: std.posix.fd_t, alloc: Allocator) !void {
         try self.get(fd);
 
         errdefer self.deinit(alloc);

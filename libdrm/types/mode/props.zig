@@ -9,8 +9,8 @@ pub const ModeGetBlob = extern struct {
 
     pub const req = os.IOCTL.IOWR(0xAC, ModeGetBlob);
 
-    pub fn get(self: *ModeGetBlob, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
+    pub fn get(self: *ModeGetBlob, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
@@ -18,11 +18,11 @@ pub const ModeGetBlob = extern struct {
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
             .OPNOTSUPP => error.NotSupported,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 
-    pub fn getAllocated(self: *ModeGetBlob, fd: std.os.fd_t, alloc: Allocator) !void {
+    pub fn getAllocated(self: *ModeGetBlob, fd: std.posix.fd_t, alloc: Allocator) !void {
         try self.get(fd);
 
         errdefer self.deinit(alloc);
@@ -95,8 +95,8 @@ pub const ModeGetProperty = extern struct {
         __future: u26,
     };
 
-    pub fn get(self: *ModeGetProperty, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
+    pub fn get(self: *ModeGetProperty, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
@@ -104,11 +104,11 @@ pub const ModeGetProperty = extern struct {
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
             .OPNOTSUPP => error.NotSupported,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 
-    pub fn getAllocated(self: *ModeGetProperty, fd: std.os.fd_t, alloc: Allocator) !void {
+    pub fn getAllocated(self: *ModeGetProperty, fd: std.posix.fd_t, alloc: Allocator) !void {
         try self.get(fd);
 
         errdefer self.deinit(alloc);

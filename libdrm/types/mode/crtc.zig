@@ -40,8 +40,8 @@ pub const ModeGetCrtc = extern struct {
     pub const reqGet = os.IOCTL.IOWR(0xA1, ModeGetCrtc);
     pub const reqSet = os.IOCTL.IOWR(0xA2, ModeGetCrtc);
 
-    pub fn get(self: *ModeGetCrtc, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, reqGet, @intFromPtr(self)))) {
+    pub fn get(self: *ModeGetCrtc, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, reqGet, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
@@ -49,12 +49,12 @@ pub const ModeGetCrtc = extern struct {
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
             .OPNOTSUPP => error.NotSupported,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 
-    pub fn set(self: *const ModeGetCrtc, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, reqSet, @intFromPtr(self)))) {
+    pub fn set(self: *const ModeGetCrtc, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, reqSet, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
@@ -62,7 +62,7 @@ pub const ModeGetCrtc = extern struct {
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
             .OPNOTSUPP => error.NotSupported,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 

@@ -51,8 +51,8 @@ pub const ModeGetEncoder = extern struct {
 
     pub const req = os.IOCTL.IOWR(0xA6, ModeGetEncoder);
 
-    pub fn get(self: *ModeGetEncoder, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
+    pub fn get(self: *ModeGetEncoder, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
@@ -60,7 +60,7 @@ pub const ModeGetEncoder = extern struct {
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
             .OPNOTSUPP => error.NotSupported,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 };
@@ -81,8 +81,8 @@ pub const ModeCardRes = extern struct {
 
     pub const req = os.IOCTL.IOWR(0xA0, ModeCardRes);
 
-    pub fn get(self: *ModeCardRes, fd: std.os.fd_t) !void {
-        return switch (std.os.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
+    pub fn get(self: *ModeCardRes, fd: std.posix.fd_t) !void {
+        return switch (std.posix.errno(os.ioctl(fd, req, @intFromPtr(self)))) {
             .SUCCESS => {},
             .BADF => error.NotOpenForWriting,
             .NOENT => error.NotFound,
@@ -90,7 +90,7 @@ pub const ModeCardRes = extern struct {
             .INVAL => unreachable,
             .NOTTY => error.NotATerminal,
             .OPNOTSUPP => error.NotSupported,
-            else => |e| std.os.unexpectedErrno(e),
+            else => |e| std.posix.unexpectedErrno(e),
         };
     }
 
@@ -99,7 +99,7 @@ pub const ModeCardRes = extern struct {
         return @as([*]T, @ptrFromInt(@field(self, @tagName(field))))[0..count];
     }
 
-    pub fn getAllocated(self: *ModeCardRes, fd: std.os.fd_t, alloc: Allocator) !void {
+    pub fn getAllocated(self: *ModeCardRes, fd: std.posix.fd_t, alloc: Allocator) !void {
         try self.get(fd);
 
         errdefer self.deinit(alloc);
